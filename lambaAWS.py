@@ -7,7 +7,7 @@ from copy import deepcopy
 
 
 def lambda_handler(event, context):
-    init(8)
+    init(25)
 
 
 date = date.today()
@@ -23,7 +23,7 @@ sorted_all_video_data = []
 ### Init the database with today's date
 def databaseINIT(today):
     collectionName = 'LayerOne' + today
-    cluster = MongoClient("mongodb+srv://Tiktop:2022@cluster0.fstq1.mongodb.net/?retryWrites=true&w=majority")
+    cluster = MongoClient("ENTER ")
     db = cluster["Tiktop"]
     collection = db[collectionName]
     return collection
@@ -31,7 +31,7 @@ def databaseINIT(today):
     ### Get the first connexion to the API
 def first_connexion():
     headers = {
-        'X-API-KEY': '37maK1w2e7oDLhQdOGDoLG9rubDTXX5i',
+        'X-API-KEY': 'ENTER API KEY',
         'accept': 'application/json',
         'country': 'us',
     }
@@ -157,7 +157,7 @@ def connexion_loop(cursor, NB_PAGE):
     #Number of page returned [By 30 items in each page]. Already one called (get_data_content), so Add 1.
     for i in range(NB_PAGE):
         headers = {
-            'X-API-KEY': '37maK1w2e7oDLhQdOGDoLG9rubDTXX5i',
+            'X-API-KEY': 'ENTER API KEY',
             'accept': 'application/json',
         }
         params = {
