@@ -15,7 +15,7 @@ client = boto3.client('s3',
 
 def databaseINIT(today):
     collectionName = 'LayerOne' + today
-    cluster = MongoClient("mongodb+srv://Tiktop:2022@cluster0.fstq1.mongodb.net/?retryWrites=true&w=majority")
+    cluster = MongoClient("ENTER CLUSTER INFO")
     db = cluster["Tiktop"]
     collection = db[collectionName]
     return collection
@@ -52,10 +52,6 @@ def uploadLayerOne(allVideoMetadata, collection): #uploadLAyerOne(storeS3, datab
         print(item)
     return collection
 
-def updateDb(collection):
-    dbItems = collection.find({})
-    for item in dbItems:
-        print(item)
 
 #MAIN
 db = databaseINIT(today)
