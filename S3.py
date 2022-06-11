@@ -13,13 +13,15 @@ client = boto3.client('s3',
                             aws_access_key_id = access_key,
                             aws_secret_access_key = secret_access_key)
 
+                                            #INITIALISATION OF THE DATABASE
 def databaseINIT(today):
     collectionName = 'LayerOne' + today
-    cluster = MongoClient("ENTER CLUSTER INFO")
+    cluster = MongoClient("mongodb+srv://Tiktop:2022@cluster0.fstq1.mongodb.net/?retryWrites=true&w=majority")
     db = cluster["Tiktop"]
     collection = db[collectionName]
     return collection
 
+                                            #QUERY DATA FROM THE LAYER ONE DATA
 def queryData(collection):
     allVideoMetada = []
     videoMetadata = {'_id': None,  'URL': None}
@@ -30,6 +32,7 @@ def queryData(collection):
         allVideoMetada.append(deepcopy(videoMetadata))
     return allVideoMetada
 
+                                            #HOST THE MEDIA ON THE S3 STORAGE - BY DAY AS A FOLDER
 def storeS3(allVideoMetadata):
     for item in allVideoMetadata:
         url = item['URL']
@@ -41,20 +44,26 @@ def storeS3(allVideoMetadata):
         item['URL'] = 'https://downloadaddr.s3.amazonaws.com/' + today + '/' + id + '.mp4'
     return allVideoMetadata
 
+                                            #MODIFY DOWNLOADADDR BY THE NEW HOSTING LINK AND UPDATING IT ON DB
 def uploadLayerOne(allVideoMetadata, collection): #uploadLAyerOne(storeS3, databaseInit)
     dbItems = collection.find({})
     for item in dbItems:
         id = item['_id']
         for meta in allVideoMetadata:
             if (id == meta['_id']):
-                item['downloadAddr'] = meta['URL']
-        collection.delete_one(item)
-        print(item)
+                collection.update_one({'_id' : id},
+                              {'$set': { 'downloadAddr' : meta['URL']}})
     return collection
 
+                                            #SEE ITEM ON CONSOLE
+def updateDb(collection):
+    dbItems = collection.find({})
+    for item in dbItems:
+        print(item)
 
-#MAIN
-db = databaseINIT(today)
-data = queryData(db)
-store = storeS3(data)
-upload = uploadLayerOne(store, db)
+                                                    #MAIN
+def initS3(today):
+    db = databaseINIT(today)
+    data = queryData(db)
+    store = storeS3(data)
+    upload = uploadLayerOne(store, db)
