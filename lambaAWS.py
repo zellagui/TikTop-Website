@@ -5,10 +5,11 @@ from datetime import date
 import requests
 from copy import deepcopy
 
+from S3 import  *
 
 def lambda_handler(event, context):
-    init(25)
-
+    init(20)
+    initS3(today)
 
 date = date.today()
 today = date.strftime("%d-%m-%Y")
@@ -19,11 +20,10 @@ name = '#tiktokmademebuythis'
 all_video_data = []
 sorted_all_video_data = []
 
-
 ### Init the database with today's date
 def databaseINIT(today):
     collectionName = 'LayerOne' + today
-    cluster = MongoClient("ENTER ")
+    cluster = MongoClient("mongodb+srv://Tiktop:2022@cluster0.fstq1.mongodb.net/?retryWrites=true&w=majority")
     db = cluster["Tiktop"]
     collection = db[collectionName]
     return collection
@@ -31,7 +31,7 @@ def databaseINIT(today):
     ### Get the first connexion to the API
 def first_connexion():
     headers = {
-        'X-API-KEY': 'ENTER API KEY',
+        'X-API-KEY': '37maK1w2e7oDLhQdOGDoLG9rubDTXX5i',
         'accept': 'application/json',
         'country': 'us',
     }
@@ -118,13 +118,10 @@ def get_data_content(data):
             nb_view = item['stats']['playCount']
 
         except:
-            print('The download error happenend')
             continue
 
         #Engagement function to give a score on 100%
         dict['engagement'] = calculate_engagement(nb_like, nb_comment, nb_share, nb_view)
-
-        #print(dict)
         list_dict.append(deepcopy(dict))
 
     for i in list_dict:
@@ -132,19 +129,11 @@ def get_data_content(data):
 
     #get the final List[video_data] sorted by engagement rate
     sortedd = sorted(all_video_data, key=lambda d: d['engagement'], reverse=True)
-
-    print(str(len(sorted_all_video_data)) + ' allvidzdata')
-
-
     for i in sortedd:
         sorted_all_video_data.append(i)
-
     remove_dup(sorted_all_video_data)
 
-    print(str(cursor) + ' = cursor ')
-
-
-    #print(sorted_all_video_data)
+    print('cursor: ' + str(cursor))
 
     #making there is more element
     if(hasNext == True):
@@ -157,7 +146,7 @@ def connexion_loop(cursor, NB_PAGE):
     #Number of page returned [By 30 items in each page]. Already one called (get_data_content), so Add 1.
     for i in range(NB_PAGE):
         headers = {
-            'X-API-KEY': 'ENTER API KEY',
+            'X-API-KEY': '37maK1w2e7oDLhQdOGDoLG9rubDTXX5i',
             'accept': 'application/json',
         }
         params = {
@@ -205,28 +194,21 @@ def selectData(sorted_all_video_data, collection, max_items):
         collection.insert_one(video)
         if(count == max_items):
             break
-    count = count + 1
+        else:
+            count = count + 1
+            continue
+    print(str(count) + 'Tiktok selected')
 
 
-
-
-    ###MAIN
+###MAIN
 # The first connexion to the API
 def init(Nb_page):
     collection = databaseINIT(today)
     data = first_connexion()
-    print('First connexion OK!')
-
     get_data_content(data)
-    print('Data access OK!')
-
     for info in data: #data from the first connexion
         cursor = data['cursor'] #get access to the first next cursor
-
-    print('connexion loop starting')
     connexion_loop(cursor, Nb_page)
+    selectData(sorted_all_video_data, collection, 100)
+    print('Data went from API to our Database,')
 
-    selectData(sorted_all_video_data, collection, 120)
-
-    print('Connected!')
-    print(str(len(sorted_all_video_data)) + 'Tiktoks selected')
