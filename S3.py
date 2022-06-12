@@ -63,7 +63,9 @@ def updateDb(collection):
 
                                                     #MAIN
 def initS3(today):
+    print('S3 operation start')
     db = databaseINIT(today)
     data = queryData(db)
     store = storeS3(data)
     upload = uploadLayerOne(store, db)
+    print('S3 operation end')
